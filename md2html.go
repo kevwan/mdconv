@@ -1,21 +1,50 @@
 package main
 
 import (
+	"embed"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
 
 	"github.com/kevwan/mdconv/converter"
+)
+
+const (
+	embedDir        = "templates"
+	embedHeaderFile = "header.html"
+	embedFooterFile = "footer.html"
 )
 
 var (
 	input      = flag.String("i", "", "markdown file")
 	output     = flag.String("o", "", "output html file")
-	headerFile = flag.String("header", "templates/header.html", "the header template file")
-	footerFile = flag.String("footer", "templates/footer.html", "the footer template file")
+	headerFile = flag.String("header", "", "the header template file, default to use embedded template")
+	footerFile = flag.String("footer", "", "the footer template file, default to use embedded template")
+
+	//go:embed templates/*.html
+	embedded embed.FS
 )
+
+func getContent(file, embeddedFile string) (string, error) {
+	if len(file) > 0 {
+		content, err := ioutil.ReadFile(file)
+		if err != nil {
+			return "", err
+		}
+
+		return string(content), nil
+	}
+
+	content, err := embedded.ReadFile(path.Join(embedDir, embeddedFile))
+	if err != nil {
+		return "", err
+	}
+
+	return string(content), nil
+}
 
 func main() {
 	flag.Parse()
@@ -24,12 +53,22 @@ func main() {
 		flag.Usage()
 	}
 
+	header, err := getContent(*headerFile, embedHeaderFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	footer, err := getContent(*footerFile, embedFooterFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	content, err := ioutil.ReadFile(*input)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	html, err := converter.MarkdownToHtml(*headerFile, *footerFile, content)
+	html, err := converter.MarkdownToHtml(header, footer, content)
 	if err != nil {
 		log.Fatal(err)
 	}

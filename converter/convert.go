@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"strings"
 
 	"github.com/kennygrant/sanitize"
@@ -19,22 +18,11 @@ func Convert(body []byte) []byte {
 	return append(toc, content...)
 }
 
-func MarkdownToHtml(headerFile, footerFile string, body []byte) ([]byte, error) {
-	html := Convert(body)
-
-	header, err := ioutil.ReadFile(headerFile)
-	if err != nil {
-		return nil, err
-	}
-	footer, err := ioutil.ReadFile(footerFile)
-	if err != nil {
-		return nil, err
-	}
-
+func MarkdownToHtml(header, footer string, body []byte) ([]byte, error) {
 	var buffer bytes.Buffer
 	buffer.WriteString(fmt.Sprintf(string(header), extractTitle(body)))
-	buffer.Write(html)
-	buffer.Write(footer)
+	buffer.Write(Convert(body))
+	buffer.WriteString(footer)
 
 	return buffer.Bytes(), nil
 }
