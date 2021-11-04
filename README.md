@@ -10,6 +10,6 @@ A tool to convert `markdown` files to `html` files.
 
 - `-i` - specify the input `markdown` file
 - `-o` - specify the output `html` file
-- `-header` - specify the `html` header template file
-- `-footer` - specify the `html` footer template file
+- `-header` - specify the `html` header template file, default to use embedded header
+- `-footer` - specify the `html` footer template file, default to use embedded footer
 
